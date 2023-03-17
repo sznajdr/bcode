@@ -10,7 +10,7 @@ from PIL import ImageDraw
 
 st.set_page_config(page_title="CursorBot Barcode Generator", layout="wide")
 
-st.title("CursorBot Barcode Generator")
+st.title("Barcode Generator")
 
 df = pd.DataFrame(columns=["barcode", "title", "lagerplatz"])
 
