@@ -4,6 +4,8 @@ import json
 import requests
 import textwrap
 import os
+import streamlit.report_thread
+import streamlit.server.server
 from PIL import ImageFont
 from PIL import Image
 from PIL import ImageDraw
