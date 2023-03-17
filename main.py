@@ -7,18 +7,33 @@ import os
 from PIL import ImageFont
 from PIL import Image
 from PIL import ImageDraw
+from streamlit.report_thread import get_report_ctx
+from streamlit.server.server import Server
 
-st.set_page_config(page_title="Barcode Generator", layout="wide")
 
-st.title("Barcode Generator")
+st.set_page_config(page_title="CursorBot Barcode Generator", layout="wide")
 
-df = pd.DataFrame(columns=["barcode", "title", "lagerplatz"])
+st.title("CursorBot Barcode Generator")
+
+session = get_session()
+if "df" not in session:
+    session.df = pd.DataFrame(columns=["barcode", "title", "lagerplatz"])
+df = session.df
 
 try:
     with open('products.json') as f:
         products = json.load(f)
 except FileNotFoundError:
     products = {"products": []}
+
+def get_session():
+    ctx = get_report_ctx()
+    session_id = ctx.session_id
+    session_info = Server.get_current()._get_session_info(session_id)
+    if session_info is None:
+        raise RuntimeError("Couldn't get your Streamlit Session.")
+    return session_info.session
+
 
 def add_row(barcode, title, lagerplatz):
     global df, products
@@ -64,7 +79,7 @@ def add_barcode(barcode, title, lagerplatz):
             wrapped_title_height += font.getsize(line)[1]
 
         wrapped_lagerplatz_height = 0
-        for line in wrapped_lagerplatz:
+        for line inwrapped_lagerplatz:
             wrapped_lagerplatz_height += font.getsize(line)[1]
 
         total_width = max(width, font.getsize(title)[0])
