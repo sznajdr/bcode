@@ -8,7 +8,7 @@ from PIL import ImageFont
 from PIL import Image
 from PIL import ImageDraw
 
-st.set_page_config(page_title="CursorBot Barcode Generator", layout="wide")
+st.set_page_config(page_title="Barcode Generator", layout="wide")
 
 st.title("Barcode Generator")
 
