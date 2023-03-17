@@ -4,23 +4,13 @@ import json
 import requests
 import textwrap
 import os
-import streamlit.report_thread
-import streamlit.server.server
 from PIL import ImageFont
 from PIL import Image
 from PIL import ImageDraw
-from streamlit.report_thread import get_report_ctx
-from streamlit.server.server import Server
-
 
 st.set_page_config(page_title="CursorBot Barcode Generator", layout="wide")
 
 st.title("CursorBot Barcode Generator")
-
-session = get_session()
-if "df" not in session:
-    session.df = pd.DataFrame(columns=["barcode", "title", "lagerplatz"])
-df = session.df
 
 try:
     with open('products.json') as f:
@@ -28,30 +18,13 @@ try:
 except FileNotFoundError:
     products = {"products": []}
 
-def get_session():
-    ctx = get_report_ctx()
-    session_id = ctx.session_id
-    session_info = Server.get_current()._get_session_info(session_id)
-    if session_info is None:
-        raise RuntimeError("Couldn't get your Streamlit Session.")
-    return session_info.session
-
-
 def add_row(barcode, title, lagerplatz):
-    global df, products
-    df = pd.concat([df, pd.DataFrame({"barcode": [barcode], "title": [title], "lagerplatz": [lagerplatz]})], ignore_index=True)
+    global products
     products["products"].append({"barcode": barcode, "title": title, "lagerplatz": lagerplatz})
     with open('products.json', 'w') as f:
         json.dump(products, f)
 
-def download_csv():
-    global df
-    file_exists = os.path.isfile('barcodes.csv')
-    df.to_csv('barcodes.csv', index=False, mode='a', header=not file_exists)
-    return 'barcodes.csv'
-
 def add_barcode(barcode, title, lagerplatz):
-    global df
     bcid = "ean13"
 
     font = ImageFont.truetype("Arial.ttf", size=14)
@@ -103,6 +76,9 @@ def add_barcode(barcode, title, lagerplatz):
             draw.text((x - text_width // 2, y - text_height // 4), line, font=font, fill=(0, 0, 0, 255))
             y += text_height
 
+        # Add a clear space row between title and lagerplatz
+        y += font.getsize(" ")[1]
+
         for line in wrapped_lagerplatz:
             text_width, text_height = font.getsize(line)
             draw.text((x - text_width // 2, y - text_height // 4), line, font=font, fill=(0, 0, 0, 255))
@@ -119,16 +95,10 @@ lagerplatz_textbox = st.text_input("Lagerplatz:")
 
 add_button = st.button("Hinzufügen")
 add_barcode_button = st.button("Barcodes erstellen")
-download_button = st.button("Download CSV")
 
 if add_button:
     add_row(barcode_textbox, title_textbox, lagerplatz_textbox)
-    st.write(df)
 
 if add_barcode_button:
     final_filename = add_barcode(barcode_textbox, title_textbox, lagerplatz_textbox)
     st.image(final_filename)
-
-if download_button:
-    csv_file = download_csv()
-    st.markdown(f"[Download CSV]({csv_file})")
