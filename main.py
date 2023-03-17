@@ -79,7 +79,7 @@ def add_barcode(barcode, title, lagerplatz):
             wrapped_title_height += font.getsize(line)[1]
 
         wrapped_lagerplatz_height = 0
-        for line inwrapped_lagerplatz:
+        for line in wrapped_lagerplatz:
             wrapped_lagerplatz_height += font.getsize(line)[1]
 
         total_width = max(width, font.getsize(title)[0])
