@@ -1,109 +1,117 @@
-
 import streamlit as st
+import pandas as pd
+import json
 import requests
-import os
-from PIL import Image, ImageFont, ImageDraw
 import textwrap
+import os
+from PIL import ImageFont
+from PIL import Image
+from PIL import ImageDraw
 
-st.set_page_config(page_title="Barcode Generator")
-filename = "barcode.png"  # define filename with a default value
+st.set_page_config(page_title="CursorBot Barcode Generator", layout="wide")
 
-# Download Arial.ttf if it doesn't exist
-if not os.path.exists("Arial.ttf"):
-    url = "https://github.com/matomo-org/travis-scripts/raw/71555936095b4d4252ec0a2eeacd710a17793db4/fonts/Arial.ttf"
-    response = requests.get(url)
-    with open("Arial.ttf", "wb") as f:
-        f.write(response.content)
+st.title("CursorBot Barcode Generator")
 
-# Define example number and title values
-example_number = 6938936708209
-example_title = "Druckbett PEI-Guss ROUGH 330x330"
+df = pd.DataFrame(columns=["barcode", "title", "lagerplatz"])
 
-# Define widgets
-barcode_textbox = st.text_input("Barcode:", value=str(example_number))
-title_textbox = st.text_input("Title:", value=str(example_title))
-generate_button = st.button("Generate Barcode")
+try:
+    with open('products.json') as f:
+        products = json.load(f)
+except FileNotFoundError:
+    products = {"products": []}
 
+def add_row(barcode, title, lagerplatz):
+    global df, products
+    df = pd.concat([df, pd.DataFrame({"barcode": [barcode], "title": [title], "lagerplatz": [lagerplatz]})], ignore_index=True)
+    products["products"].append({"barcode": barcode, "title": title, "lagerplatz": lagerplatz})
+    with open('products.json', 'w') as f:
+        json.dump(products, f)
 
-# Define functions
-def generate_barcode():
-    global filename  # make filename accessible inside the function
-    barcode = barcode_textbox
-    title = title_textbox
-    # Generate barcode image for the entered barcode
-    # Set the barcode type to EAN13
+def download_csv():
+    global df
+    file_exists = os.path.isfile('barcodes.csv')
+    df.to_csv('barcodes.csv', index=False, mode='a', header=not file_exists)
+    return 'barcodes.csv'
+
+def add_barcode(barcode, title, lagerplatz):
+    global df
     bcid = "ean13"
 
-    # Set the font for the product title
     font = ImageFont.truetype("Arial.ttf", size=14)
 
-    # Set the EAN13 number as the text to encode
     ean = barcode
 
-    # Set the product title as the filename
     filename = "{}.png".format(barcode)
 
-    # Set the API endpoint URL with includetext parameter
-    url = "https://bwipjs-api.metafloor.com/?bcid={}&text={}&includetext=1&bg=ffffff".format(bcid, ean)
+    url = "https://bwipjs-api.metafloor.com/?bcid={}&text={}".format(bcid, ean)
 
-    # Send an HTTP GET request to the API endpoint
     response = requests.get(url)
 
-    # Save the returned PNG image file with the product title as the filename
     with open(filename, "wb") as f:
         f.write(response.content)
+    filename = filename.strip()
+    with Image.open(filename) as img:
 
-# Open the saved barcode image
-filename = filename.strip()
+        width, height = img.size
+        
+        max_title_width = 40
 
-# Create a new image with extra margin to fit the wrapped product title text
-with Image.open(filename) as img:
-    # Get the size of the barcode image
-    width, height = img.size
-
-    max_title_width = width * 3 # Set the maximum width for the product title text to three times the width of the barcode
-    wrapped_title = textwrap.wrap(title_textbox, width=max_title_width, break_long_words=True) # Wrap the product title text into multiple lines if it is too long to fit
-    wrapped_title_height = 0 # Calculate the total height required for the wrapped product title text
-    for line in wrapped_title:
-        wrapped_title_height += font.getsize(line)[1]
-
-    # Calculate the total width required for the title and barcode
-    total_width = max(width, font.getsize(title_textbox)[0])
-
-    new_width = width * 2 # Fix the width to twice the width of the barcode
-    new_height = height + wrapped_title_height + 3 * height # Add extra margin at bottom
-    new_img = Image.new("RGBA", (new_width, new_height), color=(255, 255, 255, 255))
-
-    # Paste the barcode image onto the new image
-    barcode_img = img.convert("RGBA") # Convert the mode of the barcode image to RGBA
-    new_img.paste(barcode_img, (int((new_width - width) / 2), 0))
-
-    # Get the actual width of the wrapped product title text
-    actual_title_width = min([font.getsize(line)[0] for line in wrapped_title])
-
-    # Create a transparent overlay for the wrapped product title text
-    overlay = Image.new("RGBA", new_img.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-
-    # Draw the wrapped product title text onto the overlay
-    y = height + 2 * height
-    for line in wrapped_title:
-        w, h = font.getsize(line)
-        x = int((new_width - w) / 2)
-        draw.text((x, y), line, font=font, fill=(0, 0, 0, 255))
-        y += h
-
-    # Merge the overlay with the new image
-    new_img = Image.alpha_composite(new_img, overlay)
-
-    # Save the final image with the product title as the filename
-    final_filename = "{}_final.png".format(title)
-    new_img.save(final_filename)
-    # Display the new image with the product title
-    st.image(final_filename, width=width)
-
-
+        wrapped_title = textwrap.wrap(title, width=max_title_width, break_long_words=True)
+        wrapped_lagerplatz = textwrap.wrap(lagerplatz, width=max_title_width, break_long_words=True)
     
-if generate_button:
-    generate_barcode()
-st.markdown("[products.csv in colab](https://colab.research.google.com/drive/16l0hgwL2Mg-FkCQBiKBLIVj1IX6GsCrA?usp=sharing)")
+        wrapped_title_height = 0
+        for line in wrapped_title:
+            wrapped_title_height += font.getsize(line)[1]
+
+        wrapped_lagerplatz_height = 0
+        for line inwrapped_lagerplatz:
+            wrapped_lagerplatz_height += font.getsize(line)[1]
+
+        total_width = max(width, font.getsize(title)[0])
+
+        new_width = total_width + 2 # Add extra margin on both sides
+        new_height = height + wrapped_title_height + wrapped_lagerplatz_height + 32 # Add extra margin at bottom
+        new_img = Image.new("RGBA", (new_width, new_height), color=(255, 255, 255, 255))
+
+        barcode_x = (new_width - width) // 2
+        new_img.paste(img, (barcode_x, 0), img)
+
+        draw = ImageDraw.Draw(new_img)
+
+        x = new_width // 2
+        y = height + 10 + (wrapped_title_height // 2)
+
+        for line in wrapped_title:
+            text_width, text_height = font.getsize(line)
+            draw.text((x - text_width // 2, y - text_height // 4), line, font=font, fill=(0, 0, 0, 255))
+            y += text_height
+
+        for line in wrapped_lagerplatz:
+            text_width, text_height = font.getsize(line)
+            draw.text((x - text_width // 2, y - text_height // 4), line, font=font, fill=(0, 0, 0, 255))
+            y += text_height
+
+        final_filename = "final_" + filename
+        new_img.save(final_filename)
+        return final_filename
+
+# Streamlit UI
+barcode_textbox = st.text_input("Barcode:")
+title_textbox = st.text_input("Titel:")
+lagerplatz_textbox = st.text_input("Lagerplatz:")
+
+add_button = st.button("Hinzufügen")
+add_barcode_button = st.button("Barcodes erstellen")
+download_button = st.button("Download CSV")
+
+if add_button:
+    add_row(barcode_textbox, title_textbox, lagerplatz_textbox)
+    st.write(df)
+
+if add_barcode_button:
+    final_filename = add_barcode(barcode_textbox, title_textbox, lagerplatz_textbox)
+    st.image(final_filename)
+
+if download_button:
+    csv_file = download_csv()
+    st.markdown(f"[Download CSV]({csv_file})")
