@@ -63,7 +63,8 @@ def add_barcode(barcode, title, lagerplatz):
         new_height = height + wrapped_title_height + wrapped_lagerplatz_height + 22 # Adjusted margin at bottom
         new_img = Image.new("RGBA", (new_width, new_height), color=(255, 255, 255, 255))
 
-        barcode_x = (new_width - width) // 2        new_img.paste(img, (barcode_x, 0), img)
+        barcode_x = (new_width - width) // 2        
+        new_img.paste(img, (barcode_x, 0), img)
 
         draw = ImageDraw.Draw(new_img)
 
