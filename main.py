@@ -86,7 +86,15 @@ def add_barcode(barcode, title, lagerplatz):
 
         final_filename = "final_" + filename
         new_img.save(final_filename)
-        return final_filename
+
+        # Cut the image in half horizontally and only use the bottom half
+        with Image.open(final_filename) as final_img:
+            final_width, final_height = final_img.size
+            cropped_img = final_img.crop((0, final_height // 2, final_width, final_height))
+            cropped_filename = "cropped_" + final_filename
+            cropped_img.save(cropped_filename)
+
+        return cropped_filename
 
 # Streamlit UI
 barcode_textbox = st.text_input("Barcode:")
