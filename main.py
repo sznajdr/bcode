@@ -95,8 +95,6 @@ lagerplatz_textbox = st.text_input("Lagerplatz:")
 
 add_barcode_button = st.button("Barcode erstellen")
 
-if add_button:
-    add_row(barcode_textbox, title_textbox, lagerplatz_textbox)
 
 if add_barcode_button:
     final_filename = add_barcode(barcode_textbox, title_textbox, lagerplatz_textbox)
