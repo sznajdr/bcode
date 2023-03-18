@@ -57,14 +57,13 @@ def add_barcode(barcode, title, lagerplatz):
         for line in wrapped_lagerplatz:
             wrapped_lagerplatz_height += font.getsize(line)[1]
 
-        total_width = max(width, font.getsize(title)[0])
+        total_width = width * 2 # Fixed width as twice the width of the initial barcode
 
-        new_width = total_width + 2 # Add extra margin on both sides
-        new_height = height + wrapped_title_height + wrapped_lagerplatz_height + 32 # Add extra margin at bottom
+        new_width = total_width
+        new_height = height + wrapped_title_height + wrapped_lagerplatz_height + 22 # Adjusted margin at bottom
         new_img = Image.new("RGBA", (new_width, new_height), color=(255, 255, 255, 255))
 
-        barcode_x = (new_width - width) // 2
-        new_img.paste(img, (barcode_x, 0), img)
+        barcode_x = (new_width - width) // 2        new_img.paste(img, (barcode_x, 0), img)
 
         draw = ImageDraw.Draw(new_img)
 
@@ -75,9 +74,6 @@ def add_barcode(barcode, title, lagerplatz):
             text_width, text_height = font.getsize(line)
             draw.text((x - text_width // 2, y - text_height // 4), line, font=font, fill=(0, 0, 0, 255))
             y += text_height
-
-        # Add a clear space row between title and lagerplatz
-        y += font.getsize(" ")[1]
 
         for line in wrapped_lagerplatz:
             text_width, text_height = font.getsize(line)
