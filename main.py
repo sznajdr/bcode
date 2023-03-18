@@ -102,9 +102,7 @@ title_textbox = st.text_input("Titel:")
 lagerplatz_textbox = st.text_input("Lagerplatz:")
 add_barcode_button = st.button("Barcode erstellen")
 
-url = "https://colab.research.google.com/drive/16l0hgwL2Mg-FkCQBiKBLIVj1IX6GsCrA?authuser=2#scrollTo=uXPh6wWK_oD0"
-
-st.components.v1.iframe(url, height=800)
+st.markdown('<a href="https://colab.research.google.com/drive/16l0hgwL2Mg-FkCQBiKBLIVj1IX6GsCrA?authuser=2#scrollTo=uXPh6wWK_oD0">mehrere & csv in colab</a>', unsafe_allow_html=True)
 
 if add_barcode_button:
     final_filename = add_barcode(barcode_textbox, title_textbox, lagerplatz_textbox)
