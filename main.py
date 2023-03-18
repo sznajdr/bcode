@@ -8,9 +8,9 @@ from PIL import ImageFont
 from PIL import Image
 from PIL import ImageDraw
 
-st.set_page_config(page_title="CursorBot Barcode Generator", layout="wide")
+st.set_page_config(page_title="Barcode Generator", layout="wide")
 
-st.title("CursorBot Barcode Generator")
+st.title("Barcode Generator")
 
 try:
     with open('products.json') as f:
@@ -93,8 +93,7 @@ barcode_textbox = st.text_input("Barcode:")
 title_textbox = st.text_input("Titel:")
 lagerplatz_textbox = st.text_input("Lagerplatz:")
 
-add_button = st.button("Hinzufügen")
-add_barcode_button = st.button("Barcodes erstellen")
+add_barcode_button = st.button("Barcode erstellen")
 
 if add_button:
     add_row(barcode_textbox, title_textbox, lagerplatz_textbox)
