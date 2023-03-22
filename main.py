@@ -24,6 +24,15 @@ def add_row(barcode, title, lagerplatz):
     with open('products.json', 'w') as f:
         json.dump(products, f)
 
+def download_font():
+    url = "https://github.com/matomo-org/travis-scripts/raw/71555936095b4d4252ec0a2eeacd710a17793db4/fonts/Arial.ttf"
+    response = requests.get(url)
+    with open("Arial.ttf", "wb") as f:
+        f.write(response.content)
+
+if not os.path.exists("Arial.ttf"):
+    download_font()
+
 def add_barcode(barcode, title, lagerplatz):
     bcid = "ean13"
 
@@ -57,7 +66,7 @@ def add_barcode(barcode, title, lagerplatz):
         for line in wrapped_lagerplatz:
             wrapped_lagerplatz_height += font.getsize(line)[1]
 
-        total_width = width * 2 # Fixed width as twice the width of the initial barcode
+        total_width = width * 2 #Fixed width as twice the width of the initial barcode
 
         new_width = total_width
         new_height = height + wrapped_title_height + wrapped_lagerplatz_height + 22 # Adjusted margin at bottom
